@@ -115,6 +115,13 @@ def _mark_notify_metadata(metadata: dict | None) -> dict:
     return notify_metadata
 
 
+def _is_deferred_followup_event(event) -> bool:
+    """Return true for events that must queue and cannot answer prompts."""
+    return bool(getattr(event, "internal", False)) or bool(
+        (getattr(event, "metadata", None) or {}).get("deferred_followup_event")
+    )
+
+
 def _reply_anchor_for_event(event) -> str | None:
     """Return reply_to id for platforms that need reply semantics.
 
@@ -5990,7 +5997,7 @@ class BasePlatformAdapter(ABC):
             # Same shape as the /approve deadlock fix (PR #4926) — both
             # cases are "agent thread blocked on Event.wait, message must
             # reach the resolver before being treated as a new turn."
-            if not cmd:
+            if not cmd and not _is_deferred_followup_event(event):
                 try:
                     from tools import clarify_gateway as _clarify_mod
                     _has_text_clarify = (

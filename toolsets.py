@@ -87,6 +87,11 @@ _HERMES_CORE_TOOLS = [
     "computer_use",
 ]
 
+# Platform-specific tools that must remain directly callable when Tool Search
+# assembles a large platform bundle. These are intentionally separate from
+# the shared core so other platforms do not pay their schema.
+_HERMES_PLATFORM_EAGER_TOOLS = frozenset({"telegram_react"})
+
 # Webhook events may originate from untrusted third-party content (for example,
 # public PR titles/comments). Keep the default webhook toolset intentionally
 # constrained to avoid local file/system execution by prompt injection.
@@ -506,7 +511,12 @@ TOOLSETS = {
     "hermes-telegram": {
         "description": "Telegram bot toolset - full access for personal use (terminal has safety checks)",
         "tools": _HERMES_CORE_TOOLS,
-        "includes": []
+        "includes": ["telegram_reactions"]
+    },
+    "telegram_reactions": {
+        "description": "React to the current inbound Telegram message",
+        "tools": ["telegram_react"],
+        "includes": [],
     },
     
     "hermes-discord": {
